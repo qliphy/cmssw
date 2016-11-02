@@ -27,7 +27,9 @@ void MuonSeedSimpleCleaner::clean(TrajectorySeedCollection & seeds)
 bool MuonSeedSimpleCleaner::checkPt(const TrajectorySeed & seed) const
 {
   bool result = true;
-  if(seed.nHits() == 1)
+  if(seed.nHits()<1) {result=false;}
+//  if(seed.nHits() == 1)
+  if(seed.nHits() >0)
   {
     int rawId = seed.startingState().detId();
     DetId detId(rawId);
