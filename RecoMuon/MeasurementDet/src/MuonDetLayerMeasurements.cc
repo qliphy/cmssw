@@ -147,10 +147,10 @@ MuonRecHitContainer MuonDetLayerMeasurements::recHits(const GeomDet* geomDet,
 	checkGEMRecHits(); 
 
 	// Create the chamber Id
-	GEMDetId chamberId(geoId.rawId());
+//	GEMDetId chamberId(geoId.rawId());
 ////    GEMSegment
-//        GEMDetId detId(geoId.rawId());
-//        GEMDetId chamberId(detId.region(),detId.ring(),detId.station(),0,detId.chamber(),0);
+        GEMDetId detId(geoId.rawId());
+        GEMDetId chamberId(detId.region(),detId.ring(),detId.station(),0,detId.chamber(),0);
 
 
 	LogDebug("Muon|RecoMuon|MuonDetLayerMeasurements") << "(GEM): "<<chamberId<<std::endl;
