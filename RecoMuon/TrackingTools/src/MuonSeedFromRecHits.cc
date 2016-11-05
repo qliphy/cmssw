@@ -63,6 +63,8 @@ TrajectorySeed MuonSeedFromRecHits::createSeed(float ptmean,
   // Fill the LocalTrajectoryParameters
   LocalPoint segPos=last->localPosition();
       std::cout<<" LL41 " <<last->isCSC()<<" "<<last->isGEM()<<" "<<std::endl;
+    std::cout<<" new1 "<<(*iter)->localPosition().x()<<std::endl;
+    std::cout<<" new2 "<<(*iter)->globalPosition().eta()<<std::endl;
 
   GlobalVector mom=last->globalPosition()-GlobalPoint();
       std::cout<<" LL42 " <<std::endl;

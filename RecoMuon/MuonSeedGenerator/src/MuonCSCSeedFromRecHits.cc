@@ -35,7 +35,11 @@ TrajectorySeed MuonCSCSeedFromRecHits::seed() const
         iter != end; ++iter)
   {
 
-//    std::cout<<" new "<<(*iter)->isCSC() << " "<< (*iter)->isGEM()<<std::endl;
+    std::cout<<" new0 "<<(*iter)->isCSC() << " "<< (*iter)->isGEM()<<std::endl;
+    std::cout<<" new1 "<<(*iter)->localPosition().x()<<std::endl;
+    std::cout<<" new2 "<<(*iter)->globalPosition().eta()<<std::endl;
+    std::cout<<" new3 "<<(*iter)->globalDirection().phi()<<std::endl;
+
     int station = CSCDetId((*iter)->geographicalId().rawId()).station();
     if((*iter)->isGEM()) 
          {  station=GEMDetId((*iter)->geographicalId().rawId()).station();
