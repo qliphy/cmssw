@@ -39,7 +39,7 @@ process.MessageLogger = cms.Service("MessageLogger",
     destinations = cms.untracked.vstring('cout')
 )
 process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('seed-csc.root')
+                               fileName = cms.untracked.string('seed-cscgem.root')
                                )
 
 
@@ -62,7 +62,7 @@ process.MSeed = cms.EDProducer("MuonSeedGenerator",
      beamSpotTag = cms.InputTag("offlineBeamSpot"),
      EnableDTMeasurement = cms.bool(False),
      EnableCSCMeasurement = cms.bool(True),
-     EnableGEMMeasurement = cms.bool(False),
+     EnableGEMMeasurement = cms.bool(True),
      DTRecSegmentLabel = cms.InputTag("dt4DSegments"),
      CSCRecSegmentLabel = cms.InputTag("cscSegments"),
      GEMRecSegmentLabel = cms.InputTag("gemSegments"),
