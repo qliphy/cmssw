@@ -50,8 +50,10 @@ private:
 
   // Histograms
   TH1F *hPtRec;
+  TH1F *hPtRec_new;
   TH1F *hPtSim; 
   TH1F *hPres;
+  TH1F *hPres_new;
   TH1F *h1_Pres;
   TH1F *hPTDiff;
   TH1F *hEtaDiff;

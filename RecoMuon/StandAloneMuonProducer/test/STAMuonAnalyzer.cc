@@ -59,17 +59,20 @@ void STAMuonAnalyzer::beginJob(){
   theFile = new TFile(theRootFileName.c_str(), "RECREATE");
   theFile->cd();
 
-  hPtRec = new TH1F("pTRec","p_{T}^{rec}",250,0,120);
-  hPtSim = new TH1F("pTSim","p_{T}^{gen} ",250,0,120);
+  hPtRec = new TH1F("pTRec","p_{T}^{rec}",100,0,200);
+  hPtRec_new = new TH1F("pTRec_matched","p_{T}^{rec}",100,0,200);
+  hPtSim = new TH1F("pTSim","p_{T}^{gen} ",100,0,200);
 
-  hPTDiff = new TH1F("pTDiff","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
-  hEtaDiff = new TH1F("EtaDiff","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
-  hPTDiff2 = new TH1F("pTDiff2","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
+  hPTDiff = new TH1F("pTDiff","p_{T}^{rec} - p_{T}^{gen} ",200,-200,200);
+
+  hEtaDiff = new TH1F("EtaDiff","#eta^{rec} - #eta^{gen} ",100,-1,1);
+  hPTDiff2 = new TH1F("pTDiff2","p_{T}^{rec} - p_{T}^{gen} ",200,-200,200);
 
   hPTDiffvsEta = new TH2F("PTDiffvsEta","p_{T}^{rec} - p_{T}^{gen} VS #eta",100,-2.5,2.5,250,-120,120);
   hPTDiffvsPhi = new TH2F("PTDiffvsPhi","p_{T}^{rec} - p_{T}^{gen} VS #phi",100,-6,6,250,-120,120);
 
   hPres = new TH1F("pTRes","pT Resolution",100,-2,2);
+  hPres_new = new TH1F("pTRes_matched","pT Resolution",100,-2,2);
   h1_Pres = new TH1F("invPTRes","1/pT Resolution",100,-2,2);
 }
 
@@ -83,8 +86,10 @@ void STAMuonAnalyzer::endJob(){
   // Write the histos to file
   theFile->cd();
   hPtRec->Write();
+  hPtRec_new->Write();
   hPtSim->Write();
   hPres->Write();
+  hPres_new->Write();
   h1_Pres->Write();
   hPTDiff->Write();
   hEtaDiff->Write();
@@ -144,10 +149,9 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
 
   for (staTrack = staTracks->begin(); staTrack != staTracks->end(); ++staTrack){
     reco::TransientTrack track(*staTrack,&*theMGField,theTrackingGeometry); 
-    
     cout << debug.dumpFTS(track.impactPointTSCP().theState());
-    
     recPt = track.impactPointTSCP().momentum().perp();    
+    cout<<" eta: "<<track.impactPointTSCP().position().eta()<<" "<<track.impactPointTSCP().momentum().eta()<<endl;
     cout<<" p: "<<track.impactPointTSCP().momentum().mag()<< " pT: "<<recPt<<endl;
     cout<<" chi2: "<<track.chi2()<<endl;
     
@@ -176,8 +180,14 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
 
       hPTDiff->Fill(recPt-simPt);
 //cout<<track.impactPointTSCP().position().eta()<<" .... "<<track.impactPointTSCP().position().phi()<<endl;
-      double etadiff=fabs(track.impactPointTSCP().position().eta())-fabs(simEta);
+      double etadiff=(track.impactPointTSCP().momentum().eta())-(simEta);
       hEtaDiff->Fill(etadiff);
+
+      if(fabs(etadiff)<0.02) {
+          hPtRec_new->Fill(recPt);
+          hPres_new->Fill( (recPt-simPt)/simPt);
+      }
+
       hPTDiff2->Fill(track.innermostMeasurementState().globalMomentum().perp()-simPt);
       hPTDiffvsEta->Fill(track.impactPointTSCP().position().eta(),recPt-simPt);
       hPTDiffvsPhi->Fill(track.impactPointTSCP().position().phi(),recPt-simPt);
