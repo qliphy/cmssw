@@ -24,6 +24,7 @@
 #include "RecoMuon/TrackingTools/interface/MuonPatternRecoDumper.h"
 
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
 
 #include "TFile.h"
 #include "TH1F.h"
@@ -34,8 +35,9 @@ using namespace edm;
 
 /// Constructor
 STAMuonAnalyzer::STAMuonAnalyzer(const ParameterSet& pset){
-  theSTAMuonLabel = pset.getUntrackedParameter<string>("StandAloneTrackCollectionLabel");
-  theSeedCollectionLabel = pset.getUntrackedParameter<string>("MuonSeedCollectionLabel");
+//  theSTAMuonLabel = pset.getUntrackedParameter<string>("StandAloneTrackCollectionLabel");
+  staSrc_=consumes<edm::View<reco::Track>>(pset.getParameter<edm::InputTag>( "StandAloneTrackCollectionLabel") ) ;
+  simSrc_=consumes<edm::View<SimTrack>>(pset.getParameter<edm::InputTag>( "simLabel") ) ;
 
   theRootFileName = pset.getUntrackedParameter<string>("rootFileName");
 
@@ -61,6 +63,7 @@ void STAMuonAnalyzer::beginJob(){
   hPtSim = new TH1F("pTSim","p_{T}^{gen} ",250,0,120);
 
   hPTDiff = new TH1F("pTDiff","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
+  hEtaDiff = new TH1F("EtaDiff","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
   hPTDiff2 = new TH1F("pTDiff2","p_{T}^{rec} - p_{T}^{gen} ",250,-120,120);
 
   hPTDiffvsEta = new TH2F("PTDiffvsEta","p_{T}^{rec} - p_{T}^{gen} VS #eta",100,-2.5,2.5,250,-120,120);
@@ -84,6 +87,7 @@ void STAMuonAnalyzer::endJob(){
   hPres->Write();
   h1_Pres->Write();
   hPTDiff->Write();
+  hEtaDiff->Write();
   hPTDiff2->Write();
   hPTDiffvsEta->Write();
   hPTDiffvsPhi->Write();
@@ -97,8 +101,9 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
   MuonPatternRecoDumper debug;
   
   // Get the RecTrack collection from the event
-  Handle<reco::TrackCollection> staTracks;
-  event.getByLabel(theSTAMuonLabel, staTracks);
+  Handle<edm::View<reco::Track>> staTracks;
+//  event.getByLabel(theSTAMuonLabel, staTracks);
+   event.getByToken(staSrc_, staTracks);
 
   ESHandle<MagneticField> theMGField;
   eventSetup.get<IdealMagneticFieldRecord>().get(theMGField);
@@ -108,21 +113,24 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
   
   double recPt=0.;
   double simPt=0.;
+  double simEta=-100.;
 
   // Get the SimTrack collection from the event
   if(theDataType == "SimData"){
-    Handle<SimTrackContainer> simTracks;
-    event.getByLabel("g4SimHits",simTracks);
-    
+    Handle<edm::View<SimTrack>> simTracks;
+//    event.getByLabel("g4SimHits",simTracks);
+    event.getByToken(simSrc_,simTracks);
+  
     numberOfRecTracks += staTracks->size();
 
-    SimTrackContainer::const_iterator simTrack;
-
+//    SimTrackContainer::const_iterator simTrack;
+   edm::View<SimTrack>::const_iterator  simTrack;
     cout<<"Simulated tracks: "<<endl;
     for (simTrack = simTracks->begin(); simTrack != simTracks->end(); ++simTrack){
       if (abs((*simTrack).type()) == 13) {
 	cout<<"Sim pT: "<<(*simTrack).momentum().pt()<<endl;
 	simPt=(*simTrack).momentum().pt();
+        simEta=(*simTrack).momentum().eta();
 	cout<<"Sim Eta: "<<(*simTrack).momentum().eta()<<endl;
 	numberOfSimTracks++;
       }    
@@ -130,8 +138,8 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
     cout << endl;
   }
   
-  reco::TrackCollection::const_iterator staTrack;
-  
+//  reco::TrackCollection::const_iterator staTrack;
+   edm::View<reco::Track>::const_iterator staTrack;
   cout<<"Reconstructed tracks: " << staTracks->size() << endl;
 
   for (staTrack = staTracks->begin(); staTrack != staTracks->end(); ++staTrack){
@@ -167,8 +175,10 @@ void STAMuonAnalyzer::analyze(const Event & event, const EventSetup& eventSetup)
       hPtSim->Fill(simPt);
 
       hPTDiff->Fill(recPt-simPt);
-
-      //      hPTDiff2->Fill(track.innermostMeasurementState().globalMomentum().perp()-simPt);
+//cout<<track.impactPointTSCP().position().eta()<<" .... "<<track.impactPointTSCP().position().phi()<<endl;
+      double etadiff=fabs(track.impactPointTSCP().position().eta())-fabs(simEta);
+      hEtaDiff->Fill(etadiff);
+      hPTDiff2->Fill(track.innermostMeasurementState().globalMomentum().perp()-simPt);
       hPTDiffvsEta->Fill(track.impactPointTSCP().position().eta(),recPt-simPt);
       hPTDiffvsPhi->Fill(track.impactPointTSCP().position().phi(),recPt-simPt);
 

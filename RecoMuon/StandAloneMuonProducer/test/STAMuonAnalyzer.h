@@ -9,6 +9,9 @@
 
 // Base Class Headers
 #include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
 
 namespace edm {
   class ParameterSet;
@@ -40,8 +43,10 @@ private:
   std::string theRootFileName;
   TFile* theFile;
 
-  std::string theSTAMuonLabel;
-  std::string theSeedCollectionLabel;
+  edm::EDGetTokenT<edm::View<reco::Track>> staSrc_;
+  edm::EDGetTokenT<edm::View<SimTrack>> simSrc_;
+  //std::string theSTAMuonLabel;
+  //std::string theSeedCollectionLabel;
 
   // Histograms
   TH1F *hPtRec;
@@ -49,6 +54,7 @@ private:
   TH1F *hPres;
   TH1F *h1_Pres;
   TH1F *hPTDiff;
+  TH1F *hEtaDiff;
   TH1F *hPTDiff2;
   TH2F *hPTDiffvsEta;
   TH2F *hPTDiffvsPhi;
