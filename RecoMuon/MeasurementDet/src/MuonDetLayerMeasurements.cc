@@ -53,7 +53,8 @@ MuonDetLayerMeasurements::MuonDetLayerMeasurements(edm::InputTag dtlabel,
   dtToken_ = iC.consumes<DTRecSegment4DCollection>(dtlabel);
   cscToken_ = iC.consumes<CSCSegmentCollection>(csclabel);
   rpcToken_ = iC.consumes<RPCRecHitCollection>(rpclabel);
-  gemToken_ = iC.consumes<GEMRecHitCollection>(gemlabel);
+//  gemToken_ = iC.consumes<GEMRecHitCollection>(gemlabel);
+  gemToken_ = iC.consumes<GEMSegmentCollection>(gemlabel);
   me0Token_ = iC.consumes<ME0SegmentCollection>(me0label);
 
   static int procInstance(0);
@@ -146,18 +147,24 @@ MuonRecHitContainer MuonDetLayerMeasurements::recHits(const GeomDet* geomDet,
 	checkGEMRecHits(); 
 
 	// Create the chamber Id
-	GEMDetId chamberId(geoId.rawId());
+//	GEMDetId chamberId(geoId.rawId());
+////    GEMSegment
+        GEMDetId detId(geoId.rawId());
+        GEMDetId chamberId(detId.region(),detId.ring(),detId.station(),0,detId.chamber(),0);
+
 
 	LogDebug("Muon|RecoMuon|MuonDetLayerMeasurements") << "(GEM): "<<chamberId<<std::endl;
 
 	// Get the GEM-Segment which relies on this chamber
-	GEMRecHitCollection::range range = theGEMRecHits->get(chamberId);
+//	GEMRecHitCollection::range range = theGEMRecHits->get(chamberId);
+        GEMSegmentCollection::range range = theGEMRecHits->get(chamberId);
 
 	LogDebug("Muon|RecoMuon|MuonDetLayerMeasurements") << "Number of GEM rechits available =  " << theGEMRecHits->size()
 							   <<", from chamber: "<< chamberId<<std::endl;
 
 	// Create the MuonTransientTrackingRecHit
-	for (GEMRecHitCollection::const_iterator rechit = range.first; 
+//	for (GEMRecHitCollection::const_iterator rechit = range.first; 
+        for (GEMSegmentCollection::const_iterator rechit = range.first;
 	     rechit!=range.second; ++rechit)
 	  result.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));
 	LogDebug("Muon|RecoMuon|MuonDetLayerMeasurements") << "Number of GEM rechits = " << result.size()<<std::endl;
@@ -259,7 +266,6 @@ void MuonDetLayerMeasurements::checkGEMRecHits()
   checkEvent();
   auto cacheID = theEvent->cacheIdentifier();
   if (cacheID == theGEMEventCacheID) return;
-
   {
     theEvent->getByToken(gemToken_, theGEMRecHits);
     theGEMEventCacheID = cacheID;
