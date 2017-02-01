@@ -2,6 +2,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/MuonDetId/interface/GEMDetId.h"
 
 #include "TMath.h"
 #include <sstream>
@@ -374,6 +375,9 @@ int MuonSeedPtExtractor::stationCode(MuonTransientTrackingRecHit::ConstMuonRecHi
        result = 0;
   }
   else if(hit->isRPC()){
+  }
+  else if(hit->isGEM()){
+      result=GEMDetId(hit->hit()->geographicalId().rawId()).station(); 
   }
   return result;
 }

@@ -1,6 +1,7 @@
 #include "RecoMuon/MuonSeedGenerator/src/MuonCSCSeedFromRecHits.h"
 #include "RecoMuon/MuonSeedGenerator/src/MuonSeedPtExtractor.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/MuonDetId/interface/GEMDetId.h"
 #include "RecoMuon/TrackingTools/interface/MuonPatternRecoDumper.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/TrajectoryState/interface/PTrajectoryStateOnDet.h"
@@ -33,7 +34,20 @@ TrajectorySeed MuonCSCSeedFromRecHits::seed() const
   for ( MuonRecHitContainer::const_iterator iter = theRhits.begin(), end = theRhits.end();
         iter != end; ++iter)
   {
+
+//    std::cout<<" new0 "<<(*iter)->isCSC() << " "<< (*iter)->isGEM()<<std::endl;
+//    std::cout<<" new1 "<<(*iter)->localPosition().x()<<std::endl;
+//    std::cout<<" new2 "<<(*iter)->globalPosition().eta()<<std::endl;
+//    std::cout<<" new3 "<<(*iter)->globalDirection().phi()<<std::endl;
+
     int station = CSCDetId((*iter)->geographicalId().rawId()).station();
+    if((*iter)->isGEM()) 
+         {  station=GEMDetId((*iter)->geographicalId().rawId()).station();
+//std::cout<<" mmm "<<station<<std::endl;
+            if (station==3) {station=2;}  
+//            if (station==2) {station=1;}
+          }
+
     if(station == 1)
     {
       station1Hits.push_back(*iter);
@@ -186,6 +200,7 @@ MuonCSCSeedFromRecHits::bestEndcapHit(const MuonRecHitContainer & endcapHits) co
 
   for ( MuonRecHitContainer::const_iterator iter = endcapHits.begin(); iter!= endcapHits.end(); iter++ ){
     if ( !(*iter)->isCSC() ) continue;
+     //if ( !(*iter)->isCSC() && !(*iter)->isGEM() ) continue;
 
     // tmp compar. Glob-Dir for the same tr-segm:
 
